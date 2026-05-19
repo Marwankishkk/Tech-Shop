@@ -1,0 +1,20 @@
+{
+  "name": "tech-shop",
+  "version": "1.0.0",
+  "description": "ecommerce mern stack application",
+  "homepage": "https://github.com/Marwankishkk/Tech-Shop#readme",
+  "bugs": {
+    "url": "https://github.com/Marwankishkk/Tech-Shop/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marwankishkk/Tech-Shop.git"
+  },
+  "license": "ISC",
+  "author": "Marwan Kishk",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
