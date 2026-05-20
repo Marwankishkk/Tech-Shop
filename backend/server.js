@@ -1,6 +1,6 @@
 const express = require('express');
 const connectDB = require('./config/db');
-
+const {notFoundMiddleware,errorMiddleware} = require('./middlewares/errorMiddleware');
 const productRoutes = require('./routes/productRouter');
 
 const dotenv = require('dotenv');
@@ -12,11 +12,14 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 const app = express();
 
 app.use(express.json());
-app.use('/api/products', productRoutes);
-
 app.get('/', (req, res) => {
     res.send('API is running...');
     });
+app.use('/api/products', productRoutes);
+app.use(notFoundMiddleware);
+app.use(errorMiddleware);
+
+
 async function start() {
     try {
         await connectDB();

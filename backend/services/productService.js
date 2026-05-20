@@ -1,11 +1,14 @@
 const { getProductById, getAllProducts } = require('../repositories/productRepository');
 
 const getAllProductsService = async () => {
+    
   return await getAllProducts();
 };
 
 const getProductByIdService = async (id) => {
-  return await getProductById(id);
+  const product = await getProductById(id);
+
+  return product;
 };
 
 module.exports = {
