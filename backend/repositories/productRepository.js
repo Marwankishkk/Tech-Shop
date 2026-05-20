@@ -2,10 +2,7 @@ const Product = require('../models/productModel');
 
 const getAllProducts = async () => {
     try {
-        console.log('Fetching all products from the database...');
         const products = await Product.find({});
-
-        console.log('Products fetched successfully:', products);
         return products;
     } catch (error) {
         console.error('Error fetching products:', error);

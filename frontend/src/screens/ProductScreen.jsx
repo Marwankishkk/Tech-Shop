@@ -1,11 +1,24 @@
+import { useState,useEffect } from "react";
 import { useParams ,Link} from "react-router-dom";
 import { Card, Button,Row,Col,Image,ListGroup } from "react-bootstrap";
 import Rating from "../components/Rating";
-import products from "../products";
 
 const ProductScreen = () => {
     const { id } = useParams();
-    const product = products.find((p) => p._id === id);
+    const [product, setProduct] = useState({});
+    useEffect(() => {
+        const fetchProduct = async () => {
+            try {
+                const response = await fetch(`/api/products/${id}`);
+                const data = await response.json();
+                setProduct(data.data); 
+            } catch (error) {
+                console.error('Error fetching product:', error);
+            }
+        };
+
+        fetchProduct();
+    }, [id]);
     return (
         <>
                 <Link className="btn btn-light my-3" to="/">Go Back</Link>
@@ -48,7 +61,7 @@ const ProductScreen = () => {
                             </ListGroup>
                         </Card>
                     </Col>
-                    
+
                 </Row>
         </>
     );

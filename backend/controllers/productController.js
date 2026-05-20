@@ -1,52 +1,85 @@
-const { getAllProductsService, getProductByIdService } = require('../services/productService');
-
-const getAllProductsController = () => {
-    return async (req, res) => {
-        try {
-            const products = await getAllProductsService();
-            if (!products || products.length === 0) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'No products found',
-                });
-            }
-            res.status(200).json({
-                success: true,
-                message: 'Products fetched successfully',
-                data: products,
-            });
-        } catch (error) {
-            console.error('Error fetching products:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message,
-            });
-        }
-    };
-};
-const getProductByIdController = (id) => {
-    return async (req, res) => {
-        try {
-            id = req.params.id;
-            const product = await getProductByIdService(id);
-            res.status(200).json({
-                success: true,
-                message: 'Product fetched successfully',
-                data: product,
-            });
-        }
-        catch (error) {
-            console.error('Error fetching product by ID:', error);
-            res.status(500).json({
-                success: false,
-                message: error.message,
-            });
-        }
-    };
-}
-
-module.exports = {
+const {
+    getAllProductsService,
+    getProductByIdService,
+  } = require('../services/productService');
+  
+  const sendResponse = (res, status, success, message, data = null) => {
+    return res.status(status).json({
+      success,
+      message,
+      data,
+    });
+  };
+  
+  // ================= GET ALL PRODUCTS =================
+  const getAllProductsController = async (req, res) => {
+    try {
+      const products = await getAllProductsService();
+  
+      if (!products || products.length === 0) {
+        return sendResponse(
+          res,
+          404,
+          false,
+          'No products found'
+        );
+      }
+  
+      return sendResponse(
+        res,
+        200,
+        true,
+        'Products fetched successfully',
+        products
+      );
+    } catch (error) {
+      console.error(error);
+  
+      return sendResponse(
+        res,
+        500,
+        false,
+        'Server error'
+      );
+    }
+  };
+  
+  // ================= GET PRODUCT BY ID =================
+  const getProductByIdController = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      const product = await getProductByIdService(id);
+  
+      if (!product) {
+        return sendResponse(
+          res,
+          404,
+          false,
+          'Product not found'
+        );
+      }
+  
+      return sendResponse(
+        res,
+        200,
+        true,
+        'Product fetched successfully',
+        product
+      );
+    } catch (error) {
+      console.error(error);
+  
+      return sendResponse(
+        res,
+        500,
+        false,
+        'Server error'
+      );
+    }
+  };
+  
+  module.exports = {
     getAllProductsController,
-    getProductByIdController
-}
-
+    getProductByIdController,
+  };
