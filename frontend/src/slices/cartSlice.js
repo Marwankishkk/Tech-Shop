@@ -22,7 +22,6 @@ const cartSlice = createSlice({
         },
        removeFromCart(state, action){
             const productId = action.payload;
-            console.log('removing product with id:', productId);
             state.cartItems = state.cartItems.filter(x => x._id !== productId);
             updateCart(state);
             localStorage.setItem('cart', JSON.stringify(state));
