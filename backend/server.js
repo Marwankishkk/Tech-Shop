@@ -5,7 +5,7 @@ const connectDB = require('./config/db');
 const {notFoundMiddleware,errorMiddleware} = require('./middlewares/errorMiddleware');
 const productRoutes = require('./routes/productRouter');
 const userRoutes = require('./routes/userRouter');
-
+const orderRoutes = require('./routes/orderRouter');
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -21,6 +21,7 @@ app.get('/', (req, res) => {
     });
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
