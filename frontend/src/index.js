@@ -20,6 +20,7 @@ import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import ShippingScreen from './screens/ShippingScreen';
 import PaymentScreen from './screens/PaymentScreen';
+import PlaceOrderScreen from './screens/PlaceOrderScreen';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -34,6 +35,7 @@ const router = createBrowserRouter(
         {/* protected routes go here */}
         <Route path="/shipping" element={<ShippingScreen />} />
         <Route path="/payment" element={<PaymentScreen />} />
+        <Route path="/placeorder" element={<PlaceOrderScreen />} />
       </Route>
     </Route>
     

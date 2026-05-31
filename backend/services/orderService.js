@@ -1,23 +1,24 @@
 const {createOrder,getOrdersByUserId,getOrderById} =require('../repositories/orderRepository.js');
 const createOrderService = async (orderData, user) => {
     if (!orderData.orderItems?.length) {
-        
         const error = new Error('No order items');
         error.statusCode = 400;
 
         throw error;
     }
-
     const newOrder = {
-        user: user._id,
+        user: user.id,
         orderItems: orderData.orderItems.map(item => ({
             ...item,
             product: item.product
         })),
         shippingAddress: orderData.shippingAddress,
         paymentMethod: orderData.paymentMethod,
+        itemsPrice: orderData.itemsPrice,
+        taxPrice: orderData.taxPrice,
+        shippingPrice: orderData.shippingPrice,
+        totalPrice: orderData.totalPrice,
     };
-
     return await createOrder(newOrder);
 };
 
