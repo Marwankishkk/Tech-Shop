@@ -1,17 +1,104 @@
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Row, Col, ListGroup, Image, Card } from "react-bootstrap";
-import { useGetOrderDetailsQuery } from "../slices/ordersApiSlice";
+import {
+  useGetOrderDetailsQuery,
+  usePayOrderMutation,
+  useGetPayPalClientIdQuery,
+} from "../slices/ordersApiSlice";
+
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
+
 import Message from "../components/Message";
 import Loader from "../components/Loader";
 
 const OrderScreen = () => {
   const { id: orderId } = useParams();
 
-  const { data: response, error, isLoading } =
-    useGetOrderDetailsQuery(orderId);
+  const {
+    data: response,
+    error,
+    isLoading,
+    refetch,
+  } = useGetOrderDetailsQuery(orderId);
 
   const order = response?.data;
 
+  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
+
+  const { data: paypalResponse } = useGetPayPalClientIdQuery();
+
+  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
+
+  const { userInfo } = useSelector((state) => state.user);
+
+  // ----------------------------
+  // Load PayPal script
+  // ----------------------------
+  useEffect(() => {
+    const clientId = paypalResponse?.clientId;
+
+    if (!order || order.isPaid || !clientId) return;
+
+    paypalDispatch({
+      type: "resetOptions",
+      value: {
+        "client-id": clientId,
+        currency: "USD",
+      },
+    });
+
+    paypalDispatch({
+      type: "setLoadingStatus",
+      value: "pending",
+    });
+  }, [order, paypalResponse, paypalDispatch]);
+
+  // ----------------------------
+  // PayPal approve (NO capture here)
+  // ----------------------------
+  const onApprove = async (data) => {
+    try {
+      await payOrder({
+        orderId,
+        paypalOrderId: data.orderID,
+      }).unwrap();
+
+      toast.success("Payment successful");
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || err.message);
+    }
+  };
+
+  // ----------------------------
+  // Error handler
+  // ----------------------------
+  const onError = (err) => {
+    toast.error(err.message);
+  };
+
+  // ----------------------------
+  // Create PayPal order
+  // ----------------------------
+  const createOrder = (data, actions) => {
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            value: Number(order.totalPrice).toFixed(2),
+            currency_code: "USD",
+          },
+        },
+      ],
+    });
+  };
+
+  // ----------------------------
+  // Loading / error
+  // ----------------------------
   if (isLoading) return <Loader />;
 
   if (error)
@@ -23,32 +110,32 @@ const OrderScreen = () => {
 
   if (!order) return null;
 
+  // ----------------------------
+  // UI
+  // ----------------------------
   return (
     <>
-      <h1>Order {orderId}</h1>
+      <h1>Order {order._id}</h1>
 
       <Row>
-        {/* LEFT SIDE */}
+        {/* LEFT */}
         <Col md={8}>
           <ListGroup variant="flush">
 
-            {/* SHIPPING */}
             <ListGroup.Item>
               <h2>Shipping</h2>
 
-              <p>
-                <strong>Name: </strong> {order.user.name}
-              </p>
+              <p><strong>Name:</strong> {order.user.name}</p>
 
               <p>
-                <strong>Email: </strong>{" "}
+                <strong>Email:</strong>{" "}
                 <a href={`mailto:${order.user.email}`}>
                   {order.user.email}
                 </a>
               </p>
 
               <p>
-                <strong>Address: </strong>
+                <strong>Address:</strong>{" "}
                 {order.shippingAddress.address},{" "}
                 {order.shippingAddress.city},{" "}
                 {order.shippingAddress.postalCode},{" "}
@@ -58,8 +145,7 @@ const OrderScreen = () => {
               {order.isDelivered ? (
                 <Message variant="success">
                   Delivered on{" "}
-                  {order.deliveredAt &&
-                    new Date(order.deliveredAt).toLocaleDateString()}
+                  {new Date(order.deliveredAt).toLocaleDateString()}
                 </Message>
               ) : (
                 <Message variant="danger">Not Delivered</Message>
@@ -68,15 +154,13 @@ const OrderScreen = () => {
               {order.isPaid ? (
                 <Message variant="success">
                   Paid on{" "}
-                  {order.paidAt &&
-                    new Date(order.paidAt).toLocaleDateString()}
+                  {new Date(order.paidAt).toLocaleDateString()}
                 </Message>
               ) : (
                 <Message variant="danger">Not Paid</Message>
               )}
             </ListGroup.Item>
 
-            {/* ORDER ITEMS */}
             <ListGroup.Item>
               <h2>Order Items</h2>
 
@@ -112,13 +196,15 @@ const OrderScreen = () => {
                 </ListGroup>
               )}
             </ListGroup.Item>
+
           </ListGroup>
         </Col>
 
-        {/* RIGHT SIDE - ORDER SUMMARY */}
+        {/* RIGHT */}
         <Col md={4}>
           <Card>
             <ListGroup variant="flush">
+
               <ListGroup.Item>
                 <h2>Order Summary</h2>
               </ListGroup.Item>
@@ -154,6 +240,24 @@ const OrderScreen = () => {
                   </Col>
                 </Row>
               </ListGroup.Item>
+
+              {/* PAYPAL */}
+              {!order.isPaid && (
+                <ListGroup.Item>
+                  {loadingPay && <Loader />}
+
+                  {isPending ? (
+                    <Loader />
+                  ) : (
+                    <PayPalButtons
+                      createOrder={createOrder}
+                      onApprove={onApprove}
+                      onError={onError}
+                    />
+                  )}
+                </ListGroup.Item>
+              )}
+
             </ListGroup>
           </Card>
         </Col>

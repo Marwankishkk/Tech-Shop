@@ -1,4 +1,4 @@
-const { createOrderService, getMyOrdersService , getOrderByIdService} = require('../services/orderService.js');
+const { createOrderService, getMyOrdersService , getOrderByIdService,updateOrderToPaidService} = require('../services/orderService.js');
 const asyncHandler = require('../middlewares/asyncHandler');
 
 const createOrderController = asyncHandler(async (req, res) => {
@@ -36,9 +36,22 @@ const getOrderByIdController = asyncHandler(async (req, res) => {
         data: order,
     });
 });
+const updateOrderToPaidController = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const paymentResult = req.body;
+
+    const updatedOrder = await updateOrderToPaidService(id, paymentResult);
+
+    res.status(200).json({
+        success: true,
+        message: 'Order updated to paid successfully',
+        data: updatedOrder,
+    });
+});
 
 module.exports = {
     createOrderController,
     getMyOrdersController,
-    getOrderByIdController
+    getOrderByIdController,
+    updateOrderToPaidController,
 };

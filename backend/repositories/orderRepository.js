@@ -16,8 +16,15 @@ const getOrdersByUserId = async (userId) => {
     return orders;
 }
 
+ const saveOrder = async (order) => {
+    return await order.save();
+};
+
 module.exports = {
     createOrder,
     getOrderById,
-    getOrdersByUserId
+    getOrdersByUserId,
+    saveOrder,
+
+
 }
