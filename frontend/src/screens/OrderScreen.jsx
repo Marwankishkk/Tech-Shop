@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Row, Col, ListGroup, Image, Card } from "react-bootstrap";
+import { Row, Col, ListGroup, Image, Card,Button } from "react-bootstrap";
 import {
   useGetOrderDetailsQuery,
   usePayOrderMutation,
   useGetPayPalClientIdQuery,
+  useDeliverOrderMutation
 } from "../slices/ordersApiSlice";
 
 import { useSelector } from "react-redux";
@@ -29,6 +30,9 @@ const OrderScreen = () => {
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
 
   const { data: paypalResponse } = useGetPayPalClientIdQuery();
+
+  const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
+  
 
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
 
@@ -110,9 +114,20 @@ const OrderScreen = () => {
 
   if (!order) return null;
 
+
+  const deliverOrderHandler = async (orderId) => {
+    try {
+        await deliverOrder(orderId).unwrap();
+        toast.success('Order marked as delivered');
+        refetch();
+    } catch (err) {
+        toast.error(err?.data?.message || err.message);
+    }
+    };
   // ----------------------------
   // UI
   // ----------------------------
+
   return (
     <>
       <h1>Order {order._id}</h1>
@@ -257,7 +272,18 @@ const OrderScreen = () => {
                   )}
                 </ListGroup.Item>
               )}
-
+            {loadingDeliver && <Loader />}
+                {userInfo?.data?.isAdmin && order.isPaid && !order.isDelivered && (
+                    <ListGroup.Item>
+                    <Button
+                        type="button"
+                        className="btn btn-block"
+                        onClick={() => deliverOrderHandler(order._id)}
+                    >
+                        Mark As Delivered
+                    </Button>
+                    </ListGroup.Item>
+                )}
             </ListGroup>
           </Card>
         </Col>

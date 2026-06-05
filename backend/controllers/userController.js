@@ -16,6 +16,7 @@ const registerUserController = asyncHandler(async (req, res) => {
         data: {
             name: user.name,
             email: user.email,
+            isAdmin: user.isAdmin,
         },
     });
 });
@@ -33,6 +34,7 @@ const loginUserController = asyncHandler(async (req, res) => {
         data: {
             name: user.name,
             email: user.email,
+            isAdmin: user.isAdmin,
         },
     });
 

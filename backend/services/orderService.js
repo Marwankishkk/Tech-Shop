@@ -1,4 +1,4 @@
-const {createOrder,getOrdersByUserId,getOrderById,saveOrder} =require('../repositories/orderRepository.js');
+const {createOrder,getOrdersByUserId,getOrderById,saveOrder,getOrders} =require('../repositories/orderRepository.js');
 const createOrderService = async (orderData, user) => {
     if (!orderData.orderItems?.length) {
         const error = new Error('No order items');
@@ -60,9 +60,31 @@ const getOrderByIdService = async (orderId) => {
 
     return await saveOrder(order);
 };
+
+//admin
+const getOrdersService = async () => {
+    const orders = await getOrders();
+    return orders;
+}
+const updateOrderToDeliveredService = async (orderId) => {
+    const order = await getOrderById(orderId);
+
+    if (!order) {
+        const error = new Error("Order not found");
+        error.statusCode = 404;
+        throw error;
+    }
+
+    order.isDelivered = true;
+    order.deliveredAt = new Date();
+
+    return await saveOrder(order);
+};
 module.exports = {
     createOrderService,
     getMyOrdersService,
     getOrderByIdService,
     updateOrderToPaidService,
+    getOrdersService,
+    updateOrderToDeliveredService
 }

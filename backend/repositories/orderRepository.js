@@ -20,11 +20,17 @@ const getOrdersByUserId = async (userId) => {
     return await order.save();
 };
 
+const getOrders = async () => {
+    const orders = await Order.find({}).populate('user', 'name email').sort({ createdAt: -1 });
+    return orders;
+}
+
 module.exports = {
     createOrder,
     getOrderById,
     getOrdersByUserId,
     saveOrder,
+    getOrders
 
 
 }
